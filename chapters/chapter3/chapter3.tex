@@ -1,0 +1,92 @@
+\chapter{系统设计与实现}
+
+\section{系统总体架构}
+
+系统由数据采集、特征工程、模型训练与可视化告警四个模块组成，总体架构如图 \ref{fig:ch3-arch} 所示。各模块之间通过标准接口传递数据，降低了耦合度，便于独立升级与扩展。
+
+\begin{figure}[htbp]
+  \centering
+  \fbox{\parbox{0.62\linewidth}{\centering\vspace{1.4cm}数据采集\ $\rightarrow$\ 特征工程\ $\rightarrow$\ 模型训练\ $\rightarrow$\ 可视化告警\vspace{1.4cm}}}
+  \caption{系统总体架构}
+  \label{fig:ch3-arch}
+\end{figure}
+
+\section{功能模块设计}
+
+\subsection{数据采集模块}
+
+数据采集模块负责从网络出口镜像流量，并按固定时间窗口汇总统计特征。为保护隐私，原始报文仅保留统计信息，不保存载荷内容。
+
+\subsection{特征工程模块}
+
+特征工程模块对原始统计特征进行归一化处理，剔除方差过小的维度，并采用主成分分析方法降低特征冗余。
+
+\section{实验结果与分析}
+
+为验证所提方法的有效性，在公开数据集上开展了对比实验，结果如表 \ref{tab:ch3-result} 所示。
+
+\begin{table}[htbp]
+  \centering
+  \caption{不同方法的检测结果对比}
+  \label{tab:ch3-result}
+  \begin{tabular}{@{}cccc@{}}
+    \toprule
+    方法 & 准确率 / \% & 召回率 / \% & $F_1$ 值 \\
+    \midrule
+    规则匹配 & 82.4 & 76.1 & 0.791 \\
+    支持向量机 & 90.7 & 85.3 & 0.879 \\
+    本文方法 & 96.2 & 93.8 & 0.950 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+从表 \ref{tab:ch3-result} 可以看出，本文方法在三项指标上均优于对比方法，说明引入注意力机制后模型对异常流量的识别能力得到提升。
+
+\subsection{检测延迟分析}
+
+在批量大小为 64 的情况下，单批数据的平均检测延迟为 18 ms，满足实时监测的工程要求。
+
+\section{关键实现}
+
+检测流程如图 \ref{fig:ch3-flow} 所示，核心逻辑见代码 \ref{code:ch3-detect}，算法描述见算法 \ref{alg:ch3-detect}。
+
+\begin{figure}[htbp]
+  \centering
+  \begin{xuptmermaid}[0.85\linewidth]
+flowchart TD
+  A[流量采集] --> B[特征提取]
+  B --> C{重构误差大于阈值}
+  C -->|是| D[触发告警]
+  C -->|否| E[记录正常日志]
+  D --> F[人工复核]
+  \end{xuptmermaid}
+  \caption{异常检测流程图}
+  \label{fig:ch3-flow}
+\end{figure}
+
+\begin{xuptcode}[language=Python,caption={异常检测核心逻辑},label={code:ch3-detect}]
+def detect_anomaly(features, model, threshold):
+    # 计算重构误差并判定异常
+    reconstructed = model.predict(features)
+    error = mean(abs(features - reconstructed))
+    return error > threshold
+\end{xuptcode}
+
+\begin{algorithm}[htbp]
+  \caption{基于自编码器的异常检测算法}
+  \label{alg:ch3-detect}
+  \begin{algorithmic}[1]
+    \Require 流量特征矩阵 $X$，判定阈值 $\theta$
+    \Ensure 异常标签向量 $y$
+    \For{$i = 1$ to $n$}
+      \State $\hat{x}_i \gets \mathrm{Decoder}(\mathrm{Encoder}(x_i))$
+      \State $s_i \gets \|x_i - \hat{x}_i\|_2$
+      \If{$s_i > \theta$}
+        \State $y_i \gets 1$
+      \Else
+        \State $y_i \gets 0$
+      \EndIf
+    \EndFor
+    \State \Return $y$
+  \end{algorithmic}
+\end{algorithm}

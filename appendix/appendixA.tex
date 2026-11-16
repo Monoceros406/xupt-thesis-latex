@@ -1,0 +1,21 @@
+% 附录 A：标题“附  录 A”，格式与正文相同，另起页
+\xuptappendixchapter{核心配置参数}
+
+本附录给出系统实验阶段使用的主要配置参数，供复现实验时参考。
+
+\begin{table}[htbp]
+  \centering
+  \caption{模型训练参数}
+  \label{tab:appa-param}
+  \begin{tabular}{@{}ccc@{}}
+    \toprule
+    参数名称 & 取值 & 说明 \\
+    \midrule
+    批大小 & 64 & 每轮训练样本数 \\
+    学习率 & 0.001 & Adam 优化器初始学习率 \\
+    训练轮数 & 100 & 早停耐心值为 10 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+附录中的图表与公式按附录序号另行编号，如表 \ref{tab:appa-param} 所示。

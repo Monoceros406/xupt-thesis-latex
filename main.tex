@@ -1,0 +1,44 @@
+% !TeX program = xelatex
+% 西安邮电大学本科毕业设计（论文）LaTeX 模板 —— 主文档
+% 编译：双击 build.bat（Windows）或运行 ./build.sh（Linux）
+
+% 优先使用工程自带的 fonts/ 字体；缺失时退回系统字体
+\IfFileExists{fonts/simsun.ttc}%
+  {\def\xuptfontset{none}}%
+  {\IfFileExists{C:/Windows/Fonts/simsun.ttc}%
+    {\def\xuptfontset{windows}}%
+    {\def\xuptfontset{fandol}}}
+\documentclass[
+  UTF8,
+  scheme=chinese,
+  punct=kaiming,
+  zihao=-4,
+  openany,
+  oneside,
+  fontset=\xuptfontset
+]{xuptthesis}
+
+\begin{document}
+
+% 前置部分：摘要、ABSTRACT、目录 —— 罗马页码，无页眉
+\xuptfrontmatter
+\input{frontmatter/abstract-cn}
+\input{frontmatter/abstract-en}
+\input{frontmatter/toc}
+
+% 正文：阿拉伯页码从 1 开始，带页眉
+\xuptmainmatter
+\input{chapters/chapter1/chapter1}
+\input{chapters/chapter2/chapter2}
+\input{chapters/chapter3/chapter3}
+
+% 结论、参考文献、致谢、附录
+\input{conclusion/conclusion}
+\input{references/references}
+\input{acknowledgements/acknowledgements}
+
+\xuptappendixstart
+\input{appendix/appendixA}
+\input{appendix/appendixB}
+
+\end{document}
